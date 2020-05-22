@@ -3,25 +3,45 @@
 ## Copyright (c) 2018-2020 Andre Richter <andre.o.richter@gmail.com>
 
 # Default to the RPi3
-BSP ?= rpi3
+BSP ?= rpizero
 
 # BSP-specific arguments
 ifeq ($(BSP),rpi3)
+    ARCH              = aarch64
     TARGET            = aarch64-unknown-none-softfloat
+    CPU               = cortex-a53
     KERNEL_BIN        = kernel8.img
     QEMU_BINARY       = qemu-system-aarch64
     QEMU_MACHINE_TYPE = raspi3
     QEMU_RELEASE_ARGS = -d in_asm -display none
     LINKER_FILE       = src/bsp/raspberrypi/link.ld
-    RUSTC_MISC_ARGS   = -C target-cpu=cortex-a53
+    RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
+    DOCKER_IMAGE      = rustembedded/osdev-utils
+    CARGO             = cargo
 else ifeq ($(BSP),rpi4)
+    ARCH              = aarch64
     TARGET            = aarch64-unknown-none-softfloat
+    CPU               = cortex-a72
     KERNEL_BIN        = kernel8.img
     QEMU_BINARY       = qemu-system-aarch64
     QEMU_MACHINE_TYPE =
     QEMU_RELEASE_ARGS = -d in_asm -display none
     LINKER_FILE       = src/bsp/raspberrypi/link.ld
-    RUSTC_MISC_ARGS   = -C target-cpu=cortex-a72
+    RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
+    DOCKER_IMAGE      = rustembedded/osdev-utils
+    CARGO             = cargo
+else ifeq ($(BSP),rpizero)
+    ARCH              = arm
+    TARGET            = armv6kz-unknown-none-softfloat
+    CPU               = arm1176jzf-s
+    KERNEL_BIN        = kernel6.img
+    QEMU_BINARY       = qemu-system-arm
+    QEMU_MACHINE_TYPE = versatilepb
+    QEMU_RELEASE_ARGS = -d in_asm -display none
+    LINKER_FILE       = src/bsp/raspberrypi/link.ld
+    RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
+    DOCKER_IMAGE      = rustembedded/cross:arm-unknown-linux-musleabihf
+    CARGO             = xargo
 endif
 
 # Export for build.rs
@@ -34,17 +54,16 @@ COMPILER_ARGS = --target=$(TARGET) \
     --features bsp_$(BSP)          \
     --release
 
-RUSTC_CMD   = cargo rustc $(COMPILER_ARGS)
-DOC_CMD     = cargo doc $(COMPILER_ARGS)
-CLIPPY_CMD  = cargo clippy $(COMPILER_ARGS)
-CHECK_CMD   = cargo check $(COMPILER_ARGS)
+RUSTC_CMD   = $(CARGO) rustc $(COMPILER_ARGS)
+DOC_CMD     = $(CARGO) doc $(COMPILER_ARGS)
+CLIPPY_CMD  = $(CARGO) clippy $(COMPILER_ARGS)
+CHECK_CMD   = $(CARGO) check $(COMPILER_ARGS)
 OBJCOPY_CMD = rust-objcopy \
     --strip-all            \
     -O binary
 
 KERNEL_ELF = target/$(TARGET)/release/kernel
 
-DOCKER_IMAGE         = rustembedded/osdev-utils
 DOCKER_CMD           = docker run -it --rm -v $(shell pwd):/work/tutorial -w /work/tutorial
 
 DOCKER_QEMU = $(DOCKER_CMD) $(DOCKER_IMAGE)
@@ -82,7 +101,7 @@ readelf: $(KERNEL_ELF)
 	readelf -a $(KERNEL_ELF)
 
 objdump: $(KERNEL_ELF)
-	rust-objdump --arch-name aarch64 --disassemble --demangle --no-show-raw-insn \
+	rust-objdump --arch-name $(ARCH) --mcpu $(CPU) --disassemble --demangle --no-show-raw-insn \
 	    --print-imm-hex $(KERNEL_ELF)
 
 nm: $(KERNEL_ELF)
