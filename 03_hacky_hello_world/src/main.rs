@@ -110,13 +110,44 @@ mod panic_wait;
 mod print;
 mod runtime_init;
 
+use core::fmt;
+
+// fn write_str(s: &str) -> fmt::Result {
+//     // cpu::wait_forever();
+//     for c in s.chars() {
+//         // cpu::insert_label();
+//         unsafe {
+//             core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
+//         }
+//     }
+
+//     Ok(())
+// }
+
+fn write_char(c: char) {
+    unsafe {
+        if c as u8 == 0 {
+            core::ptr::write_volatile(0x3F20_1000 as *mut u8, 'x' as u8);
+        }
+        core::ptr::write_volatile(0x3F20_1000 as *mut u8, c as u8);
+    }
+}
+
 /// Early init code.
 ///
 /// # Safety
 ///
 /// - Only a single core must be active and running this function.
 unsafe fn kernel_init() -> ! {
-    println!("[0] Hello from Rust!");
+    // write_str("test\n");
+    for c in "abc".chars() {
+        let x = c as u8;
+        write_char(c);
+        write_char('Y');
+    }
+    cpu::wait_forever();
 
-    panic!("Stopping here.")
+    // println!("[0] Hello from Rust!");
+
+    // panic!("Stopping here.")
 }

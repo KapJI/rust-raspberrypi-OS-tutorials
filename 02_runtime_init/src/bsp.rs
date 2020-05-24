@@ -4,8 +4,8 @@
 
 //! Conditional re-exporting of Board Support Packages.
 
-#[cfg(any(feature = "bsp_rpi3", feature = "bsp_rpi4"))]
+#[cfg(any(feature = "bsp_rpi3", feature = "bsp_rpi4", feature = "bsp_rpizero"))]
 mod raspberrypi;
 
-#[cfg(any(feature = "bsp_rpi3", feature = "bsp_rpi4"))]
+#[cfg(any(feature = "bsp_rpi3", feature = "bsp_rpi4", feature = "bsp_rpizero"))]
 pub use raspberrypi::*;

@@ -16,7 +16,6 @@ ifeq ($(BSP),rpi3)
     QEMU_RELEASE_ARGS = -d in_asm -display none
     LINKER_FILE       = src/bsp/raspberrypi/link.ld
     RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
-    DOCKER_IMAGE      = rustembedded/osdev-utils
     CARGO             = cargo
 else ifeq ($(BSP),rpi4)
     ARCH              = aarch64
@@ -24,11 +23,10 @@ else ifeq ($(BSP),rpi4)
     CPU               = cortex-a72
     KERNEL_BIN        = kernel8.img
     QEMU_BINARY       = qemu-system-aarch64
-    QEMU_MACHINE_TYPE =
+    QEMU_MACHINE_TYPE = 
     QEMU_RELEASE_ARGS = -d in_asm -display none
     LINKER_FILE       = src/bsp/raspberrypi/link.ld
     RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
-    DOCKER_IMAGE      = rustembedded/osdev-utils
     CARGO             = cargo
 else ifeq ($(BSP),rpizero)
     ARCH              = arm
@@ -36,11 +34,10 @@ else ifeq ($(BSP),rpizero)
     CPU               = arm1176jzf-s
     KERNEL_BIN        = kernel6.img
     QEMU_BINARY       = qemu-system-arm
-    QEMU_MACHINE_TYPE = versatilepb
-    QEMU_RELEASE_ARGS = -d in_asm -display none
-    LINKER_FILE       = src/bsp/raspberrypi/link.ld
+    QEMU_MACHINE_TYPE = raspi2
+    QEMU_RELEASE_ARGS = -cpu arm1176 -d in_asm -display none
+    LINKER_FILE       = src/bsp/raspberrypi/link32.ld
     RUSTC_MISC_ARGS   = -C target-cpu=$(CPU)
-    DOCKER_IMAGE      = rustembedded/cross:arm-unknown-linux-musleabihf
     CARGO             = xargo
 endif
 
@@ -66,6 +63,7 @@ KERNEL_ELF = target/$(TARGET)/release/kernel
 
 DOCKER_CMD           = docker run -it --rm -v $(shell pwd):/work/tutorial -w /work/tutorial
 
+DOCKER_IMAGE      = rustembedded/osdev-utils
 DOCKER_QEMU = $(DOCKER_CMD) $(DOCKER_IMAGE)
 
 EXEC_QEMU = $(QEMU_BINARY) -M $(QEMU_MACHINE_TYPE)

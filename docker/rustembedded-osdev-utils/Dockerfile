@@ -46,7 +46,7 @@ RUN set -ex;                                        \
     git clone git://git.qemu.org/qemu.git;                     \
     cd qemu;                                                   \
     git checkout tags/v5.0.0;                                  \
-    ./configure --target-list=aarch64-softmmu --enable-modules \
+    ./configure --target-list=aarch64-softmmu,arm-softmmu --enable-modules \
         --enable-tcg-interpreter --enable-debug-tcg            \
         --python=/usr/bin/python3;                             \
     make -j8;                                                  \
